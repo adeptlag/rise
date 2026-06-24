@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskBlitz — Beat Procrastination, Earn Rewards</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f0f1a;
+            color: #e2e2f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        a { color: #7c8aff; text-decoration: none; }
+
+        /* ===== APP CONTAINER ===== */
+        .app {
+            max-width: 800px;
+            width: 100%;
+            background: #1a1a2e;
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 1px solid #2a2a45;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffdf7e, #f9a825);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo span {
+            -webkit-text-fill-color: #e2e2f0;
+            background: none;
+            font-weight: 400;
+            font-size: 16px;
+        }
+        .domain-badge {
+            background: #2a2a45;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            border: 1px solid #3a3a5c;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .domain-badge::before {
+            content: "🌐";
+        }
+
+        /* ===== STATS BAR ===== */
+        .stats {
+            display: flex;
+            gap: 20px;
+            background: #12122a;
+            border-radius: 16px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            border: 1px solid #2a2a45;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffdf7e;
+        }
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8888aa;
+        }
+        .stat-num.done { color: #6fcf97; }
+        .stat-num.target { color: #f9a825; }
+
+        /* ===== TASK INPUT ===== */
+        .task-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .task-form input {
+            flex: 1;
+            min-width: 180px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid #3a3a5c;
+            background: #12122a;
+            color: #e2e2f0;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .task-form input:focus {
+            border-color: #7c8aff;
+            box-shadow: 0 0 0 3px rgba(124,138,255,0.2);
+        }
+        .task-form input::placeholder { color: #5a5a7a; }
+
+        .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:active { transform: scale(0.96); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c8aff, #5a6cff);
+            color: #fff;
+        }
+        .btn-primary:hover { filter: brightness(1.15); }
+
+        .btn-success {
+            background: linear-gradient(135deg, #6fcf97, #27ae60);
+            color: #fff;
+        }
+        .btn-success:hover { filter: brightness(1.15); }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: #fff;
+        }
+        .btn-danger:hover { background: #c0392b; }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #ffdf7e, #f9a825);
+            color: #1a1a2e;
+        }
+        .btn-gold:hover { filter: brightness(1.1); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #3a3a5c;
+            color: #b0b0d0;
+        }
+        .btn-outline:hover { background: #2a2a45; }
+
+        /* ===== TASK LIST ===== */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 20px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title small {
+            font-weight: 400;
+            font-size: 13px;
+            color: #8888aa;
+        }
+
+        .task-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .task-list::-webkit-scrollbar { width: 5px; }
+        .task-list::-webkit-scrollbar-thumb { background: #3a3a5c; border-radius: 10px; }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #12122a;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #2a2a45;
+            transition: 0.2s;
+        }
+        .task-item.done {
+            opacity: 0.55;
+            border-color: #6fcf97;
+            background: #0e1a12;
+        }
+        .task-item.done .task-text { text-decoration: line-through; color: #6fcf97; }
+
+        .task-check {
+            width: 22px; height: 22px;
+            border-radius: 6px;
+            border: 2px solid #5a5a7a;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .task-check:hover { border-color: #7c8aff; }
+        .task-check.checked {
+            background: #6fcf97;
+            border-color: #6fcf97;
+            color: #0f0f1a;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 15px;
+        }
+        .task-del {
+            background: none;
+            border: none;
+            color: #5a5a7a;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 4px;
+            transition: 0.2s;
+        }
+        .task-del:hover { color: #e74c3c; }
+
+        .task-empty {
+            text-align: center;
+            color: #5a5a7a;
+            padding: 30px 0;
+            font-size: 14px;
+        }
+
+        /* ===== MILESTONE / REWARD SECTION ===== */
+        .milestone-section {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #1a1a35, #12122a);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #3a3a5c;
+        }
+        .milestone-progress {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .progress-bar-wrap {
+            flex: 1;
+            min-width: 140px;
+            height: 10px;
+            background: #2a2a45;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ffdf7e, #f9a825);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+        .milestone-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffdf7e;
+            white-space: nowrap;
+        }
+
+        .reward-display {
+            margin-top: 12px;
+            padding: 16px;
+            background: #0f0f1a;
+            border-radius: 12px;
+            border: 1px dashed #3a3a5c;
+            text-align: center;
+        }
+        .reward-display .reward-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8888aa;
+        }
+        .reward-display .reward-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffdf7e;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        .reward-display .reward-desc {
+            font-size: 13px;
+            color: #b0b0d0;
+            margin-top: 6px;
+        }
+
+        /* ===== ACTIVITY ZONE ===== */
+        .activity-section {
+            margin-top: 20px;
+            background: #12122a;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #2a2a45;
+        }
+        .activity-section h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .activity-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            min-height: 160px;
+            justify-content: center;
+        }
+        .activity-zone p {
+            color: #8888aa;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* ===== DOPAMINE BURST ACTIVITY ===== */
+        .burst-counter {
+            font-size: 64px;
+            font-weight: 800;
+            color: #ffdf7e;
+            user-select: none;
+        }
+        .burst-btn {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            border: 4px solid #f9a825;
+            background: radial-gradient(circle at 30% 30%, #ffdf7e, #f9a825);
+            color: #1a1a2e;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 0 30px rgba(249,168,37,0.3);
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .burst-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 0 50px rgba(249,168,37,0.5);
+        }
+        .burst-btn:disabled {
+            opacity: 0.4;
+            filter: grayscale(0.6);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .burst-msg {
+            font-size: 15px;
+            font-weight: 600;
+            min-height: 24px;
+            color: #b0b0d0;
+        }
+        .burst-streak {
+            font-size: 13px;
+            color: #8888aa;
+        }
+
+        /* confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-box {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 30px 28px;
+            max-width: 460px;
+            width: 90%;
+            border: 1px solid #3a3a5c;
+            transform: scale(0.9);
+            transition: 0.3s;
+            text-align: center;
+        }
+        .modal-overlay.show .modal-box {
+            transform: scale(1);
+        }
+        .modal-box h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffdf7e, #f9a825);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .modal-box p { color: #b0b0d0; margin-bottom: 8px; line-height: 1.5; }
+        .modal-box .big-reward {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffdf7e;
+            padding: 12px 0;
+            word-break: break-all;
+        }
+        .modal-box .btn { margin-top: 12px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 500px) {
+            .app { padding: 16px; }
+            .logo { font-size: 22px; }
+            .stats { gap: 12px; padding: 12px; }
+            .stat-num { font-size: 22px; }
+            .task-form input { min-width: 120px; }
+            .burst-btn { width: 90px; height: 90px; font-size: 15px; }
+            .burst-counter { font-size: 48px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== CONFETTI CANVAS ===== -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <h2>🎉 Level Complete!</h2>
+            <p>You crushed your tasks! Now claim your reward.</p>
+            <div class="big-reward" id="modalReward">—</div>
+            <p id="modalDesc" style="font-size:13px;"></p>
+            <button class="btn btn-gold" onclick="closeModal()">Claim &amp; Continue 🚀</button>
+        </div>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div class="app" id="app">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">⚡ TaskBlitz <span>· reward engine</span></div>
+            <div class="domain-badge" id="domainBadge">your domain</div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-num" id="statTotal">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num done" id="statDone">0</div>
+                <div class="stat-label">Done ✅</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num target" id="statTarget">5</div>
+                <div class="stat-label">Target per Reward</div>
+            </div>
+        </div>
+
+        <!-- TASK INPUT -->
+        <div class="task-form">
+            <input type="text" id="taskInput" placeholder="e.g. Finish project report, Buy groceries..." autofocus>
+            <button class="btn btn-primary" onclick="addTask()">+ Add Task</button>
+        </div>
+
+        <!-- TASK LIST -->
+        <div class="section-title">
+            📋 Your Tasks <small id="taskCountLabel">(0)</small>
+            <button class="btn btn-outline" style="margin-left:auto;padding:6px 14px;font-size:12px;" onclick="clearDone()">Clear done</button>
+        </div>
+        <ul class="task-list" id="taskList">
+            <li class="task-empty">Add your first task above ☝️</li>
+        </ul>
+
+        <!-- MILESTONE / REWARD -->
+        <div class="milestone-section">
+            <div class="milestone-progress">
+                <div style="font-size:13px;color:#8888aa;white-space:nowrap;">🏆 Milestone</div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressFill" style="width:0%;"></div>
+                </div>
+                <div class="milestone-text" id="milestoneText">0 / 5</div>
+            </div>
+            <div class="reward-display" id="rewardDisplay">
+                <div class="reward-title">💎 Current Reward Unlocked</div>
+                <div class="reward-value" id="rewardValue">—</div>
+                <div class="reward-desc" id="rewardDesc">Complete tasks to reveal your reward</div>
+            </div>
+        </div>
+
+        <!-- ACTIVITY ZONE -->
+        <div class="activity-section">
+            <h3>🎯 Dopamine Burst — The Clicker</h3>
+            <div class="activity-zone" id="activityZone">
+                <div class="burst-counter" id="burstCounter">0</div>
+                <button class="burst-btn" id="burstBtn" disabled>⚡<br>SMASH</button>
+                <div class="burst-msg" id="burstMsg">Complete tasks to unlock the smasher!</div>
+                <div class="burst-streak" id="burstStreak"></div>
+            </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;border-top:1px solid #2a2a45;padding-top:18px;">
+            <label style="font-size:13px;color:#8888aa;display:flex;align-items:center;gap:6px;">
+                Reward every
+                <input type="number" id="targetInput" value="5" min="1" max="50" style="width:50px;padding:4px 8px;border-radius:6px;border:1px solid #3a3a5c;background:#12122a;color:#e2e2f0;text-align:center;font-size:13px;">
+                tasks
+            </label>
+            <button class="btn btn-outline" style="padding:6px 16px;font-size:12px;" onclick="updateTarget()">Set</button>
+            <button class="btn btn-danger" style="padding:6px 16px;font-size:12px;" onclick="resetAll()">Reset Everything</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATA
+        // ============================================================
+        const REWARDS_POOL = [
+            { value: "AMAZON10",       desc: "10% off on Amazon — code: AMAZON10" },
+            { value: "FLIPKART15",     desc: "15% off on Flipkart — code: FLIPKART15" },
+            { value: "MYNTRA20",       desc: "20% off on Myntra — code: MYNTRA20" },
+            { value: "AJIO25",         desc: "25% off on AJIO — code: AJIO25" },
+            { value: "NYKA10",         desc: "₹200 off on Nykaa — code: NYKA10" },
+            { value: "BOOKSHELF",      desc: "📘 Free eBook: 'Atomic Habits' PDF link unlocked" },
+            { value: "DEEPWORK",       desc: "📘 Free eBook: 'Deep Work' PDF link unlocked" },
+            { value: "POMODORO",       desc: "📘 Free eBook: 'The Pomodoro Technique' PDF" },
+            { value: "UDEMY10",        desc: "10% off any Udemy course — code: UDEMY10" },
+            { value: "SWIGGY50",       desc: "₹50 off on Swiggy — code: SWIGGY50" },
+            { value: "ZOMATO60",       desc: "60% off up to ₹75 on Zomato — code: ZOMATO60" },
+            { value: "DOMINOS20",      desc: "20% off on Domino's — code: DOMINOS20" },
+            { value: "BOOKDEPO",       desc: "📘 Free eBook: 'The 7 Habits of Highly Effective People' PDF" },
+            { value: "FLIPKART50",     desc: "Flat ₹500 off on Flipkart (min ₹2999) — code: FLIP50" },
+            { value: "AMAZONPRIME",    desc: "📘 Free eBook: 'The Lean Startup' PDF link unlocked" },
+            { value: "AJIOFLAT30",     desc: "Flat 30% off on AJIO fashion — code: AJIOFLAT30" },
+            { value: "MYNTRA_BOGO",    desc: "Buy 1 Get 1 free on Myntra selected items — code: BOGOMYNTRA" },
+            { value: "ZOMATO_GOLD",    desc: "📘 Free eBook: 'Think and Grow Rich' PDF link unlocked" },
+            { value: "SWIGGY100",      desc: "₹100 off on Swiggy orders above ₹399 — code: SWIGGY100" },
+            { value: "AMAZON_ESS",     desc: "📘 Free eBook: 'Essentialism' PDF link unlocked" },
+        ];
+
+        const MOTIVATIONAL_PHRASES = [
+            "🔥 You're on fire!",
+            "⚡ Unstoppable!",
+            "💪 Beast mode activated!",
+            "🚀 To the moon!",
+            "🎯 Laser focused!",
+            "🏆 Champion vibes!",
+            "⭐ Legendary streak!",
+            "🌀 Infinite momentum!",
+            "✨ That's the way!",
+            "🔋 Fully charged!"
+        ];
+
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let tasks = [];
+        let completedCount = 0;   // lifetime completes this session
+        let burstCount = 0;
+        let burstReady = false;
+        let rewardTarget = 5;
+        let currentReward = null;
+
+        // ============================================================
+        //  DOM REFS
+        // ============================================================
+        const $ = id => document.getElementById(id);
+        const taskList       = $('taskList');
+        const taskInput      = $('taskInput');
+        const statTotal      = $('statTotal');
+        const statDone       = $('statDone');
+        const statTarget     = $('statTarget');
+        const taskCountLabel = $('taskCountLabel');
+        const progressFill   = $('progressFill');
+        const milestoneText  = $('milestoneText');
+        const rewardValue    = $('rewardValue');
+        const rewardDesc     = $('rewardDesc');
+        const burstCounter   = $('burstCounter');
+        const burstBtn       = $('burstBtn');
+        const burstMsg       = $('burstMsg');
+        const burstStreak    = $('burstStreak');
+        const modalOverlay   = $('modalOverlay');
+        const modalReward    = $('modalReward');
+        const modalDesc      = $('modalDesc');
+        const domainBadge    = $('domainBadge');
+        const targetInput    = $('targetInput');
+
+        // ============================================================
+        //  DOMAIN DETECTION
+        // ============================================================
+        function detectDomain() {
+            let d = window.location.hostname;
+            if (!d || d === 'localhost' || d === '127.0.0.1' || d.includes('github.io')) {
+                if (d.includes('github.io')) {
+                    // extract from github.io path
+                    const path = window.location.pathname.split('/').filter(Boolean);
+                    if (path.length > 0) d = path[0] + '.github.io';
+                    else d = 'github.io';
+                } else {
+                    d = 'localhost';
+                }
+            }
+            domainBadge.textContent = '🌐 ' + d;
+        }
+        detectDomain();
+
+        // ============================================================
+        //  LOCAL STORAGE
+        // ============================================================
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('taskblitz_state');
+                if (saved) {
+                    const s = JSON.parse(saved);
+                    tasks = s.tasks || [];
+                    completedCount = s.completedCount || 0;
+                    burstCount = s.burstCount || 0;
+                    rewardTarget = s.rewardTarget || 5;
+                    // carry over domain
+                }
+            } catch(e) {}
+            // ensure tasks have 'done' property
+            tasks = tasks.map(t => typeof t === 'object' ? t : { text: t, done: false });
+            // if targetInput exists
+            if (targetInput) targetInput.value = rewardTarget;
+        }
+        function saveState() {
+            try {
+                localStorage.setItem('taskblitz_state', JSON.stringify({
+                    tasks,
+                    completedCount,
+                    burstCount,
+                    rewardTarget
+                }));
+            } catch(e) {}
+        }
+
+        // ============================================================
+        //  RENDER
+        // ============================================================
+        function render() {
+            // Stats
+            const total = tasks.length;
+            const doneCount = tasks.filter(t => t.done).length;
+            statTotal.textContent = total;
+            statDone.textContent = doneCount;
+            statTarget.textContent = rewardTarget;
+            taskCountLabel.textContent = `(${total})`;
+
+            // Task list
+            if (total === 0) {
+                taskList.innerHTML = '<li class="task-empty">Add your first task above ☝️</li>';
+            } else {
+                taskList.innerHTML = tasks.map((t, i) => `
+                    <li class="task-item ${t.done ? 'done' : ''}">
+                        <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask(${i})">${t.done ? '✓' : ''}</div>
+                        <span class="task-text">${escapeHtml(t.text)}</span>
+                        <button class="task-del" onclick="deleteTask(${i})" title="Delete">✕</button>
+                    </li>
+                `).join('');
+            }
+
+            // Progress toward next milestone
+            const progress = Math.min(completedCount / rewardTarget, 1);
+            progressFill.style.width = (progress * 100) + '%';
+            milestoneText.textContent = `${completedCount} / ${rewardTarget}`;
+
+            // Burst button state
+            const allDone = total > 0 && tasks.every(t => t.done);
+            if (allDone && total > 0) {
+                burstReady = true;
+                burstBtn.disabled = false;
+                burstMsg.textContent = "⚡ READY — SMASH for dopamine!";
+                burstMsg.style.color = "#ffdf7e";
+            } else if (total === 0) {
+                burstReady = false;
+                burstBtn.disabled = true;
+                burstMsg.textContent = "Add some tasks first!";
+                burstMsg.style.color = "#8888aa";
+            } else {
+                const rem = tasks.filter(t => !t.done).length;
+                burstReady = false;
+                burstBtn.disabled = true;
+                burstMsg.textContent = `Complete all ${rem} remaining task${rem > 1 ? 's' : ''} to unlock ⚡`;
+                burstMsg.style.color = "#8888aa";
+            }
+
+            // Reward display
+            if (completedCount > 0 && completedCount % rewardTarget === 0 && currentReward) {
+                rewardValue.textContent = currentReward.value;
+                rewardDesc.textContent = currentReward.desc;
+            } else if (currentReward && completedCount > 0) {
+                rewardValue.textContent = currentReward.value;
+                rewardDesc.textContent = currentReward.desc;
+            } else {
+                rewardValue.textContent = '—';
+                rewardDesc.textContent = 'Complete tasks to reveal your reward';
+            }
+
+            // This also triggers modal if just hit milestone
+            saveState();
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ============================================================
+        //  TASK OPERATIONS
+        // ============================================================
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (!text) return;
+            tasks.push({ text, done: false });
+            taskInput.value = '';
+            taskInput.focus();
+
+            // Check if we need to auto-set reward target
+            if (tasks.length === 1 && completedCount === 0) {
+                // pick a random reward as teaser
+                pickNewReward();
+            }
+            render();
+        }
+
+        function toggleTask(index) {
+            const t = tasks[index];
+            if (t.done) return; // already done, un-completing not allowed to keep progress honest
+            t.done = true;
+            completedCount++;
+            render();
+
+            // check milestone
+            if (completedCount % rewardTarget === 0) {
+                // reward unlocked!
+                pickNewReward();
+                render();
+                // show confetti + modal after small delay for render
+                setTimeout(() => {
+                    launchConfetti();
+                    showRewardModal(currentReward);
+                }, 200);
+                // reset burst counter for next round
+                burstCount = 0;
+                burstCounter.textContent = '0';
+            } else {
+                // just picked reward preview
+                if (!currentReward) pickNewReward();
+                render();
+            }
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            render();
+        }
+
+        function clearDone() {
+            tasks = tasks.filter(t => !t.done);
+            render();
+        }
+
+        function resetAll() {
+            if (!confirm('Reset everything? All tasks and progress will be lost.')) return;
+            tasks = [];
+            completedCount = 0;
+            burstCount = 0;
+            burstReady = false;
+            currentReward = null;
+            burstCounter.textContent = '0';
+            if (targetInput) targetInput.value = '5';
+            rewardTarget = 5;
+            localStorage.removeItem('taskblitz_state');
+            render();
+        }
+
+        function updateTarget() {
+            const v = parseInt(targetInput.value);
+            if (isNaN(v) || v < 1) return;
+            rewardTarget = v;
+            render();
+        }
+
+        // ============================================================
+        //  REWARDS
+        // ============================================================
+        function pickNewReward() {
+            const pool = [...REWARDS_POOL];
+            // try to avoid giving same one twice in a row
+            if (currentReward) {
+                const filtered = pool.filter(r => r.value !== currentReward.value);
+                if (filtered.length > 0) {
+                    currentReward = filtered[Math.floor(Math.random() * filtered.length)];
+                    return;
+                }
+            }
+            currentReward = pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        // ============================================================
+        //  DOPAMINE BURST (THE CLICKER)
+        // ============================================================
+        burstBtn.addEventListener('click', function(e) {
+            if (!burstReady) return;
+            burstCount++;
+            burstCounter.textContent = burstCount;
+
+            // haptic feedback vibes
+            this.style.transform = 'scale(0.92)';
+            setTimeout(() => { this.style.transform = ''; }, 80);
+
+            // random motivational phrase
+            const phrase = MOTIVATIONAL_PHRASES[Math.floor(Math.random() * MOTIVATIONAL_PHRASES.length)];
+            burstStreak.textContent = `🔥 x${burstCount}  ·  ${phrase}`;
+
+            // small confetti burst on each click
+            miniConfettiBurst();
+
+            // after certain clicks, unlock extra
+            if (burstCount === 10) {
+                burstMsg.textContent = "🎯 TEN SMASHES! You're glowing!";
+                burstMsg.style.color = "#6fcf97";
+            } else if (burstCount === 25) {
+                burstMsg.textContent = "💎 25! Your focus is sharp!";
+            } else if (burstCount === 50) {
+                burstMsg.textContent = "🏆 50!! LEGENDARY STATUS!";
+                launchConfetti();
+            } else if (burstCount === 69) {
+                burstMsg.textContent = "😏 Nice.";
+            } else if (burstCount === 100) {
+                burstMsg.textContent = "🌀 100!!! You're in the zone!";
+                launchConfetti();
+            }
+
+            // after smashing enough, let them "earn" a bonus task check
+            // purely psychological satisfaction
+        });
+
+        // ============================================================
+        //  CONFETTI
+        // ============================================================
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiPieces = [];
+        let confettiActive = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function launchConfetti(count = 150) {
+            confettiPieces = [];
+            for (let i = 0; i < count; i++) {
+                confettiPieces.push({
+                    x: Math.random() * canvas.width,
+                    y: -20 - Math.random() * 100,
+                    w: 6 + Math.random() * 6,
+                    h: 4 + Math.random() * 6,
+                    color: `hsl(${Math.random() * 360}, 90%, 60%)`,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: 2 + Math.random() * 5,
+                    rot: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 8,
+                    opacity: 1,
+                });
+            }
+            if (!confettiActive) {
+                confettiActive = true;
+                animateConfetti();
+            }
+        }
+
+        function miniConfettiBurst() {
+            for (let i = 0; i < 15; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const speed = 2 + Math.random() * 4;
+                confettiPieces.push({
+                    x: canvas.width / 2 + (Math.random() - 0.5) * 60,
+                    y: canvas.height / 2 - 40,
+                    w: 4 + Math.random() * 4,
+                    h: 3 + Math.random() * 4,
+                    color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 3,
+                    rot: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 10,
+                    opacity: 1,
+                });
+            }
+            if (!confettiActive) {
+                confettiActive = true;
+                animateConfetti();
+            }
+        }
+
+        function animateConfetti() {
+            if (confettiPieces.length === 0) {
+                confettiActive = false;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = confettiPieces.length - 1; i >= 0; i--) {
+                const p = confettiPieces[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.08; // gravity
+                p.rot += p.rotSpeed;
+                p.opacity -= 0.003;
+                if (p.opacity <= 0 || p.y > canvas.height + 40) {
+                    confettiPieces.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot * Math.PI / 180);
+                ctx.globalAlpha = Math.max(0, p.opacity);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx.restore();
+            }
+            requestAnimationFrame(animateConfetti);
+        }
+
+        // ============================================================
+        //  MODAL
+        // ============================================================
+        function showRewardModal(reward) {
+            if (!reward) return;
+            modalReward.textContent = reward.value;
+            modalDesc.textContent = reward.desc;
+            modalOverlay.classList.add('show');
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('show');
+        }
+
+        // ============================================================
+        //  KEYBOARD
+        // ============================================================
+        taskInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        loadState();
+        if (!currentReward && completedCount > 0) pickNewReward();
+        render();
+
+        // If there's already a milestone completed on load, don't spam modal
+        // but if they opened with completedCount > 0 and no milestone, show a warm welcome
+        if (completedCount > 0 && completedCount % rewardTarget === 0 && currentReward) {
+            // They just loaded into a milestone state — show a gentle notification
+            setTimeout(() => {
+                launchConfetti(80);
+                showRewardModal(currentReward);
+            }, 500);
+        }
+
+        console.log('⚡ TaskBlitz loaded. Go crush those tasks!');
+    </script>
+</body>
+</html>
